@@ -59,13 +59,13 @@ jobs:
       - name: Get backend URLs
         run: |
           scw container container get $BACK_CONTAINER_ID -o json > back_url.json
-          BACK_URL=$(jq -r '.status.url' back_url.json)
+          BACK_URL=$(jq -r '.domain_name' back_url.json)
           echo "BACK_URL=$BACK_URL" >> $GITHUB_ENV
 
       - name: Set BACK_URL env
         run:
          |
-          echo "BACK_URL=$(echo '${{ steps.get_back_url.outputs.stdout }}' | jq -r '.status.url')" >> $GITHUB_ENV
+          echo "BACK_URL=$(echo '${{ steps.get_back_url.outputs.stdout }}' | jq -r '.domain_name')" >> $GITHUB_ENV
 
       - name: Install frontend dependencies
         working-directory: front
