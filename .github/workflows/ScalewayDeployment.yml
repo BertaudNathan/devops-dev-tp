@@ -1,0 +1,61 @@
+name: Deploy to Scaleway
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+      SCW_DEFAULT_REGION: ${{ secrets.SCW_DEFAULT_REGION }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        working-directory: back
+        run: npm ci
+
+      - name: Build backend Docker image
+        run: docker build -t rg.fr-par.scw.cloud/YOUR_NAMESPACE/back:latest ./back
+
+      - name: Log in to Scaleway Container Registry
+        run: echo ${{ secrets.SCW_SECRET_KEY }} | docker login rg.fr-par.scw.cloud -u ${{ secrets.SCW_ACCESS_KEY }} --password-stdin
+
+      - name: Push backend Docker image
+        run: docker push rg.fr-par.scw.cloud/YOUR_NAMESPACE/back:latest
+
+      - name: Deploy backend container (Scaleway CLI)
+        run: |
+          curl -sLO https://github.com/scaleway/scaleway-cli/releases/download/v2.24.0/scw-2.24.0-linux-x86_64
+          chmod +x scw-2.24.0-linux-x86_64
+          sudo mv scw-2.24.0-linux-x86_64 /usr/local/bin/scw
+          scw config init secret-key=${{ secrets.SCW_SECRET_KEY }} access-key=${{ secrets.SCW_ACCESS_KEY }} default-project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} default-region=${{ secrets.SCW_DEFAULT_REGION }} max-scale=1 cpu-limit=100 memory-limit=128 private-network-id=6aab9b1f-f374-4797-a5f3-efd53d9167c2
+          scw container container create image=rg.fr-par.scw.cloud/YOUR_NAMESPACE/back:latest
+          BACK_URL=$(scw container container get YOUR_BACK_CONTAINER_ID -o json | jq -r '.status.url')
+          echo "BACK_URL=$BACK_URL" >> $GITHUB_ENV
+
+      - name: Install frontend dependencies
+        working-directory: front
+        run: npm ci
+
+      - name: Build frontend Docker image with backend URL
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=${{ env.BACK_URL }} \
+            -t rg.fr-par.scw.cloud/YOUR_NAMESPACE/front:latest ./front
+
+      - name: Push frontend Docker image
+        run: docker push rg.fr-par.scw.cloud/YOUR_NAMESPACE/front:latest
+
+      - name: Deploy frontend container (Scaleway CLI)
+        run: |
+          scw container container create image=rg.fr-par.scw.cloud/YOUR_NAMESPACE/front:latest max-scale=1 cpu-limit=100 memory-limit=128 private-network-id=6aab9b1f-f374-4797-a5f3-efd53d9167c2
