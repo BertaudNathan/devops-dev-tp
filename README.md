@@ -22,6 +22,7 @@ BCRYPT_SALT_ROUNDS=10
 2. Run the following command:
 ```bash
 npx prisma generate dev
+prisma migrate dev
 npm run start
 ```
 3. API is exposed on `http://localhost:3000`
