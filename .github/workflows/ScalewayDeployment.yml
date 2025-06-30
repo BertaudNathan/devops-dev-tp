@@ -39,15 +39,21 @@ jobs:
         run: docker push rg.fr-par.scw.cloud/namespace-nathan-bertaud/back:latest
 
       - name: Deploy backend container (Scaleway CLI)
+        id: deploy_back
         uses: scaleway/action-scw@v0.0.2
         with:
           args: container container create name=backend-container port=3000 registry-image=rg.fr-par.scw.cloud/namespace-nathan-bertaud/back:latest max-scale=1 cpu-limit=100 memory-limit=128 namespace-id=8284e924-797a-428b-8329-1bb065f9cd89
+
+      - name: Extract backend container ID
+        id: extract_back_id
+        run: |
+          echo "CONTAINER_ID=$(echo '${{ steps.deploy_back.outputs.stdout }}' | jq -r '.id')" >> $GITHUB_ENV
 
       - name: Get backend URLs
         id: get_back_url
         uses: scaleway/action-scw@v0.0.2
         with:
-          args: container container get YOUR_BACK_CONTAINER_ID -o json
+          args: container container get ${{ env.CONTAINER_ID }} -o json
 
       - name: Set BACK_URL env
         run: |
