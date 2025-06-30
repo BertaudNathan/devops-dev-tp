@@ -43,30 +43,14 @@ jobs:
         with:
           args: container container create name=backend-container-nathan-bertaud port=3000 registry-image=rg.fr-par.scw.cloud/namespace-nathan-bertaud/back:latest max-scale=1 cpu-limit=100 memory-limit=256 namespace-id=8284e924-797a-428b-8329-1bb065f9cd89
 
-      - name: Get backend container ID (JSON to file)
+      - name: Get backend URL
+        id: get_backend_url
         run: |
-          scw container container list name=backend-container-nathan-bertaud -o json > back_container.json
-          cat back_container.json
-      - name: Get backend container ID (JSON to file)
-        run: |
-          scw container container list name=backend-container-nathan-bertaud -o json > back_container.json
-          cat back_container.json
-
-      - name: Set backend container ID
-        run: |
-          BACK_CONTAINER_ID=$(jq -r '.[0].id' back_container.json)
-          echo "BACK_CONTAINER_ID=$BACK_CONTAINER_ID" >> $GITHUB_ENV
-      - name: Get backend URLs
-        run: |
-          scw container container get $BACK_CONTAINER_ID -o json > back_url.json
-          BACK_URL=$(jq -r '.domain_name' back_url.json)
+          BACK_CONTAINER_ID=$(scw container container list name=backend-container-nathan-bertaud -o json | jq -r '.[0].id')
+          BACK_URL=$(scw container container get $BACK_CONTAINER_ID -o json | jq -r '.domain_name')
+          echo "BACK_URL=$BACK_URL"
           echo "BACK_URL=$BACK_URL" >> $GITHUB_ENV
-
-      - name: Set BACK_URL env
-        run:
-         |
-          echo "BACK_URL=$(echo '${{ steps.get_back_url.outputs.stdout }}' | jq -r '.domain_name')" >> $GITHUB_ENV
-
+          echo "::set-output name=url::$BACK_URL"
       - name: Install frontend dependencies
         working-directory: front
         run: npm i
