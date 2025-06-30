@@ -41,7 +41,7 @@ jobs:
       - name: Deploy backend container (Scaleway CLI)
         uses: scaleway/action-scw@v0.0.2
         with:
-          args: container container create image=rg.fr-par.scw.cloud/namespace-nathan-bertaud/back:latest max-scale=1 cpu-limit=100 memory-limit=128 private-network-id=6aab9b1f-f374-4797-a5f3-efd53d9167c2
+          args: container container create registry-image=rg.fr-par.scw.cloud/namespace-nathan-bertaud/back:latest max-scale=1 cpu-limit=100 memory-limit=128 private-network-id=6aab9b1f-f374-4797-a5f3-efd53d9167c2
 
       - name: Get backend URLs
         id: get_back_url
@@ -69,4 +69,4 @@ jobs:
       - name: Deploy frontend container (Scaleway CLI)
         uses: scaleway/action-scw@v0.0.2
         with:
-          args: container container create image=rg.fr-par.scw.cloud/namespace-nathan-bertaud/front:latest max-scale=1 cpu-limit=100 memory-limit=128 private-network-id=6aab9b1f-f37
+          args: container container create registry-image=rg.fr-par.scw.cloud/namespace-nathan-bertaud/front:latest max-scale=1 cpu-limit=100 memory-limit=128 private-network-id=6aab9b1f-f37
