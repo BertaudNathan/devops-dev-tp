@@ -22,7 +22,7 @@ jobs:
 
       - name: Install backend dependencies
         working-directory: back
-        run: npm ci
+        run: npm i
 
       - name: Build backend Docker image
         run: docker build -t rg.fr-par.scw.cloud/YOUR_NAMESPACE/back:latest ./back
@@ -50,7 +50,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: front
-        run: npm ci
+        run: npm i
 
       - name: Build frontend Docker image with backend URL
         run: |
