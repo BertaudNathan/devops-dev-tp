@@ -19,12 +19,16 @@ services:
     networks:
       - appnet
   front:
-    build: ./front
+    build:
+      context: ./front
+      args:
+        VITE_API_URL: https://nsnathanbertaudcfnlprd3-container-back.functions.fnc.fr-par.scw.cloud/
     container_name: front
-    environment:
-      - VITE_API_URL=http://localhost:3000
+    #environment:
+      #- VITE_API_URL=http://localhost:3000
     ports:
       - "80:80"
+   
     depends_on:
       - back
     networks:
