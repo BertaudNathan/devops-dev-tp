@@ -47,15 +47,16 @@ jobs:
       - name: Extract backend container ID
         id: extract_back_id
         run: |
-          echo "CONTAINER_ID=$(echo '${{ steps.deploy_back.outputs.stdout }}' | jq -r '.id')" >> $GITHUB_ENV
+          echo "${{ steps.deploy_back.outputs.stdout }}" > result.json
+          echo "CONTAINER_ID=$(jq -r '.id' result.json)" >> $GITHUB_ENV
 
       - name: Get backend URLs
         id: get_back_url
         uses: scaleway/action-scw@v0.0.2
         with:
-          args: container container get ${{ env.CONTAINER_ID }} -o json
+          args: container container get ${{ env.CONTAINER_ID }}
 
-      - name: Set BACK_URL env
+      - name: Set BACK_URL envs
         run: |
           echo "BACK_URL=$(echo '${{ steps.get_back_url.outputs.stdout }}' | jq -r '.status.url')" >> $GITHUB_ENV
 
