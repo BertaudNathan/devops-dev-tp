@@ -1,0 +1,36 @@
+services:
+  back:
+    build: ./back
+    container_name: back
+    ports:
+      - "3000:3000"
+    volumes:
+      - db_data:/app/prisma
+    # You must provide these environment variables in a .env file or override at runtime:
+    #   DATABASE_URL="file:/app/prisma/file.db"
+    #   DEFAULT_ADMIN_PASSWORD="your_admin_password"
+    #   BCRYPT_SALT_ROUNDS="10"
+    environment:
+      - DATABASE_URL=file:/app/prisma/file.db
+      - DEFAULT_ADMIN_PASSWORD=d0d9fSTY$$s3@fZO$ss0nl
+      - BCRYPT_SALT_ROUNDS=10
+      - JWT_SECRET=message_secret_securise
+
+    networks:
+      - appnet
+  front:
+    build: ./front
+    container_name: front
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    ports:
+      - "80:80"
+    depends_on:
+      - back
+    networks:
+      - appnet
+volumes:
+  db_data:
+networks:
+  appnet:
+    driver: bridge 
